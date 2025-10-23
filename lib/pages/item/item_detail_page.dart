@@ -18,16 +18,39 @@ class ItemDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final svc = Provider.of<SupabaseService>(context, listen: false);
 
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFF72585), Color(0xFF3A0CA3)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Color(0xFF1E3C72),
+            Color(0xFF2A5298), // Matches AddItemPage deep blue theme
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        child: SafeArea(
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text(
+            'Item Details',
+            style: GoogleFonts.montserrat(
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 1.2,
+            ),
+          ),
+          centerTitle: true,
+        ),
+        body: SafeArea(
           child: FutureBuilder<Item?>(
             future: svc.fetchItemDetail(itemId),
             builder: (context, snap) {
@@ -36,6 +59,7 @@ class ItemDetailPage extends StatelessWidget {
                   child: CircularProgressIndicator(color: Colors.white),
                 );
               }
+
               if (snap.hasError) {
                 return Center(
                   child: Text(
@@ -44,192 +68,184 @@ class ItemDetailPage extends StatelessWidget {
                   ),
                 );
               }
+
               final item = snap.data;
               if (item == null) {
                 return Center(
                   child: Text(
                     'Item not found 🤷',
-                    style: GoogleFonts.poppins(color: Colors.white),
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
                   ),
                 );
               }
 
               return Stack(
                 children: [
-                  ListView(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                    children: [
-                      // Back + title
-                      Row(
-                        children: [
-                          GestureDetector(
-                            onTap: () => Navigator.pop(context),
-                            child:
-                            const Icon(Icons.arrow_back_ios, color: Colors.white),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Details',
-                            style: GoogleFonts.poppins(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Tappable image with Hero
-                      GestureDetector(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                FullScreenImagePage(itemId: item.id, imageUrl: item.imageUrl),
-                          ),
-                        ),
-                        child: Hero(
-                          tag: 'item-image-${item.id}',
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Colors.black38,
-                                  blurRadius: 12,
-                                  offset: Offset(0, 6),
-                                ),
-                              ],
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: Image.network(
-                              item.imageUrl,
-                              height: 300,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Title & price
-                      Text(
-                        item.title,
-                        style: GoogleFonts.poppins(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '₱ ${item.price.toStringAsFixed(2)}',
-                        style: GoogleFonts.poppins(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.yellowAccent,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Description
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Description',
-                              style: GoogleFonts.poppins(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.deepPurple,
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Hero Image
+                        GestureDetector(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => FullScreenImagePage(
+                                itemId: item.id,
+                                imageUrl: item.imageUrl,
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              item.description,
-                              style: GoogleFonts.poppins(fontSize: 14),
+                          ),
+                          child: Hero(
+                            tag: 'item-image-${item.id}',
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: Image.network(
+                                item.imageUrl,
+                                height: 280,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
                             ),
-                          ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
+                        const SizedBox(height: 24),
 
-                      // Info chips
-                      SizedBox(
-                        height: 40,
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
+                        // Title & Price
+                        Text(
+                          item.title,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '₱ ${item.price.toStringAsFixed(2)}',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.cyanAccent,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Description box (glass-like card)
+                        Container(
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.1),
+                            border: Border.all(color: Colors.white24),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              InfoChip(icon: Icons.person, text: item.uploadedBy),
-                              const SizedBox(width: 8),
-                              InfoChip(icon: Icons.contact_mail, text: item.contactInfo),
-                              const SizedBox(width: 8),
-                              InfoChip(
-                                icon: Icons.calendar_today,
-                                text: '${item.createdAt.month}/${item.createdAt.day}/${item.createdAt.year}',
+                              Text(
+                                'Description',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.cyanAccent,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                item.description,
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 14,
+                                  height: 1.4,
+                                  color: Colors.white.withOpacity(0.9),
+                                ),
                               ),
                             ],
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 24),
+
+                        // Info Chips
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            InfoChip(icon: Icons.person, text: item.uploadedBy),
+                            InfoChip(icon: Icons.contact_mail, text: item.contactInfo),
+                            InfoChip(
+                              icon: Icons.calendar_today,
+                              text:
+                              '${item.createdAt.month}/${item.createdAt.day}/${item.createdAt.year}',
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
 
-                  // Contact Owner button
+                  // Floating Contact Button
                   Positioned(
-                    bottom: 16,
-                    left: 16,
-                    right: 16,
+                    bottom: 24,
+                    left: 24,
+                    right: 24,
                     child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.yellowAccent,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
                       onPressed: () async {
-                        final email = snap.data!.contactInfo.trim();
-                        final subject =
-                        Uri.encodeComponent('Inquiry about "${item.title}"');
+                        final email = item.contactInfo.trim();
+                        final subject = Uri.encodeComponent('Inquiry about "${item.title}"');
                         final uri = Uri.parse('mailto:$email?subject=$subject');
+
                         try {
-                          await launchUrl(uri,
-                              mode: LaunchMode.externalApplication);
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
                         } catch (_) {
                           showDialog(
                             context: context,
                             builder: (_) => AlertDialog(
-                              title: Text('Contact Owner',
-                                  style: GoogleFonts.poppins()),
-                              content: SelectableText(email,
-                                  style: GoogleFonts.poppins()),
+                              backgroundColor: Colors.white,
+                              title: Text(
+                                'Contact Owner',
+                                style: GoogleFonts.montserrat(fontWeight: FontWeight.w600),
+                              ),
+                              content: SelectableText(
+                                email,
+                                style: GoogleFonts.montserrat(color: Colors.black87),
+                              ),
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.pop(context),
                                   child: Text('Close',
-                                      style: GoogleFonts.poppins()),
+                                      style: GoogleFonts.montserrat(color: Colors.blueAccent)),
                                 ),
                               ],
                             ),
                           );
                         }
                       },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF00B4D8), // cyan accent
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        elevation: 8,
+                        shadowColor: Colors.cyanAccent.withOpacity(0.6),
+                      ),
                       child: Text(
                         'Contact Owner',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 17,
                           fontWeight: FontWeight.bold,
-                          color: Colors.deepPurple,
+                          letterSpacing: 0.8,
                         ),
                       ),
                     ),
